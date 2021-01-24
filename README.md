@@ -34,7 +34,7 @@ _optional_:
 
 ### Building Topologies with GUI
 
-![](https://github.com/donadelden/miniV2G/doc/gui.png)
+![](https://github.com/donadelden/miniV2G/blob/master/doc/gui.png)
 
 I'm a beginner, I do not know Python and I would like to create a customized topology. 
 In this case [MiniEdit](https://github.com/donadelden/miniV2G/examples/miniedit.py) can serve as support since they provide a GUI to generate Python scripts. 
