@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import socket
 from v2g_tcp import TCPClient, TCPServer
 from binascii import hexlify

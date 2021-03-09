@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import socket
 
 class TCPClient:
@@ -12,7 +14,7 @@ class TCPClient:
         self.sockaddr = sockaddr
         self.s = socket.socket(family, socktype, proto)
         # self.s.bind(('', src_port))
-        
+
     def connect(self):
         self.s.connect(self.sockaddr)
         print('Connected to', self.sockaddr)
@@ -45,7 +47,7 @@ class TCPServer:
         self.s.bind(('', port))
         self.s.listen(1)
         print('Server: Listening TCP messages on port %d' % (port))
-        
+
     def accept(self):
         return self.s.accept()
 

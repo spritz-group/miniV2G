@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-""" 
+"""
     Really simple and minimal testing module for v2g
 
     To install RiseV2G on your local machine run: util/install.sh -g.
     It will:
     - Create the directory /usr/share/.miniV2G/RiseV2G and copy in it all the RiseV2G files (latest jar releases and two config files);
-    - Make sure java, xterm, curl is installed and install it otherwise.
+    - Make sure java, xterm, and curl are installed and install them otherwise.
 """
 
 from mn_wifi.net import Mininet_wifi
@@ -60,7 +60,7 @@ def v2gNet():
         info( '*** EV is charging.\n' )
         sleep( 1 )
         net.terms += [ ev1.charge( in_xterm=True ) ]
-    
+
     CLI( net )
 
     info( '*** Stopping network' )
