@@ -275,7 +275,7 @@ function babeld {
 function olsrd {
     echo "Installing olsrd..."
     $install bison flex
-    
+
     cd $BUILD_DIR/miniV2G
     if [ -d olsrd ]; then
           echo "Removing olsrd..."
@@ -761,8 +761,8 @@ function mim {
     #echo "Downloading V2Gdecoder..."
     #(cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O https://github.com/FlUxIuS/V2Gdecoder/releases/download/v1/V2Gdecoder.jar)
     # using the new version of V2Gdecoder.jar https://github.com/blackwiz4rd/V2Gdecoder
-    echo "Copying V2Gdecoder.jar..."
-    sudo cp -f $MININET_DIR/miniV2G/util/RiseV2G/V2Gdecoder.jar /usr/share/.miniV2G/
+    echo "Copying V2Gdecoder.jar and the needed schemas..."
+    sudo cp -rf $MININET_DIR/miniV2G/util/V2Gdecoder/ /usr/share/.miniV2G/
 
 }
 
