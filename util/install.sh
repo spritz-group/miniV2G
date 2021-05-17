@@ -210,7 +210,16 @@ function wifi_deps {
     echo "Installing MiniV2G dependencies"
     $install wireless-tools rfkill ${PYPKG}-numpy pkg-config \
              libnl-3-dev libnl-genl-3-dev libssl-dev make libevent-dev patch \
-             libdbus-1-dev ${PYPKG}-psutil ${PYPKG}-pip
+             libdbus-1-dev ${PYPKG}-psutil 
+    if [ ${PYPKG} = "python" ];
+    then
+        echo "******* WARNING! It is NOT reccomended to use Python2! Go ahead at your own risk."
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+        sudo python2 get-pip.py
+        rm get-pip.py
+    else
+        $install ${PYPKG}-pip
+    fi
 
     if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" = "14.04" ]; then
         sudo pip install --upgrade pip
