@@ -59,7 +59,7 @@ def v2gNet():
     info( '     - With `py ev1.charge(in_xterm=True)` the EV will start charging in the linked SE (manual by default).\n' )
     info( '*** Started automatically:\n' )
     info( '     - With `py se1.startCharge()` the SE will wait for charging EVs.\n' )
-    info( '     - Inside `xterm mim` the MiM can start the server with `python v2g_mim_server.py`. The SE must be started.\n' )
+    info( '     - Inside `xterm mim` the MiM can start the server with `python3 v2g_mim_server.py`. The SE must be started.\n' )
 
     s1.add_mim_flows(se1, ev1, mim)
 

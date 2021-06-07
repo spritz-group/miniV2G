@@ -130,9 +130,11 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-d", "--DoS", dest="dos_attack", action="store_true", default=False, help="performs a DoS attack by changing the app version of the EV to 0.0")
     parser.add_option("-c", "--ChargeMethodDoS", dest="charge_method_dos", action="store_true", default=False, help="performs a DoS attack by removing charging options on SE")
+    parser.add_option("-e", "--EndlessCharge", dest="endless_charge", action="store_true", default=False, help="performs a replay attach of CharginStatusReq")
     (options, args) = parser.parse_args()
     dos_attack = options.dos_attack
     charge_method_dos = options.charge_method_dos
+    endless_charge = options.endless_charge
 
     # CONSTANTS
     V2G_UDP_SDP_SERVER_PORT = 15118
