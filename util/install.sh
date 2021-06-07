@@ -695,7 +695,7 @@ function v2g {
     LINK2=$(curl -s https://api.github.com/repos/V2GClarity/RISE-V2G/releases\
 	| grep "browser_download_url.*.jar" \
 	| grep -Po '(?<="browser_download_url": ")[^"]*' | sed -sn 2p); \
-    echo "Downloading $LINK1 and $LINK2"; (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK1); (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK2);
+    #echo "Downloading $LINK1 and $LINK2"; (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK1); (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK2);
 
     # Copy latest jar files to local directory
     sudo rm -rf /usr/share/.miniV2G/RiseV2G # remove folder to support updating
