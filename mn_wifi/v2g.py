@@ -607,7 +607,7 @@ class MitMNode(Electric):
             if dos_attack_1:
                 command = "python3 v2g_mim_server.py -d; bash -i".format(self.folder)
             elif dos_attack_2:
-                command = "python3 v2g_mim_server.py -e; bash -i".format(self.folder)
+                command = "python3 v2g_mim_server.py -c; bash -i".format(self.folder)
             else:
                 command = "python3 v2g_mim_server.py; bash -i".format(self.folder)
             # this return a list of just one xterm, so [0] is needed
