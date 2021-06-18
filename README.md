@@ -32,7 +32,7 @@ step 2: $ git clone https://github.com/donadelden/miniV2G
 step 3: $ cd miniV2G  
 step 4: $ sudo util/install.sh -WlnfvG
 
-If you update the source code use this command:
+**If you update the source code use this command to install it:**
 step n: $ sudo util/install.sh -Wn # e.g. if you update v2g.py install with this command
 #### install.sh options:   
 -W: wireless dependencies   
