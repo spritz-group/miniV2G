@@ -17,8 +17,11 @@ Please, let us know if you are doing research with MiniV2G.
 
 ## Installation 
 The installation could be intricate. We recommend using our VM with MiniV2G preinstalled. You can download it using Vagrant:
-
-[vm-ubuntu20.04-miniv2g (2.8 GB)](https://app.vagrantup.com/blackwiz4rd/boxes/ubuntu20.04-miniv2g) _(pass: vagrant)_
+```
+vagrant init blackwiz4rd/ubuntu20.04-miniv2g
+vagrant up
+```
+[vm-ubuntu20.04-miniv2g (2.8 GB)](https://app.vagrantup.com/blackwiz4rd/boxes/ubuntu20.04-miniv2g) _(password of the VM: vagrant)_
 
 
 Otherwise, you can go for a standard installation as follows:
@@ -28,6 +31,7 @@ step 1: $ sudo apt-get install git
 step 2: $ git clone https://github.com/donadelden/miniV2G  
 step 3: $ cd miniV2G  
 step 4: $ sudo util/install.sh -WlnfvG  
+step n: $ sudo util/install.sh -Wn # e.g. if you update v2g.py install with this command
 #### install.sh options:   
 -W: wireless dependencies   
 -n: mininet-wifi dependencies    
