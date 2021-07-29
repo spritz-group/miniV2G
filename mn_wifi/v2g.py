@@ -605,11 +605,11 @@ class MitMNode(Electric):
         if in_xterm:
             # run inside an xterm. You must append the return value to net.terms to terminal on exit.
             if dos_attack_1:
-                command = "python v2g_mim_server.py -d; bash -i".format(self.folder)
+                command = "python3 v2g_mim_server.py -d; bash -i".format(self.folder)
             elif dos_attack_2:
-                command = "python v2g_mim_server.py -e; bash -i".format(self.folder)
+                command = "python3 v2g_mim_server.py -c; bash -i".format(self.folder)
             else:
-                command = "python v2g_mim_server.py; bash -i".format(self.folder)
+                command = "python3 v2g_mim_server.py; bash -i".format(self.folder)
             # this return a list of just one xterm, so [0] is needed
             self.proc = makeTerm(self, cmd="bash -i -c '{}'".format(command))[0]
             return self.proc
