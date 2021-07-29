@@ -4794,6 +4794,18 @@ class MiniEdit( Frame ):
                                x + range, y + range)
             info( 'New access point details for ' + name + ' = ' + str(newAPOpts), '\n' )
 
+<<<<<<< HEAD
+=======
+    def setChannel(self, node, channel):
+        node.wintfs[0].setAPChannel(int(channel))
+        if isinstance(node.wintfs[0], master):
+            node.wintfs[0].set_tc_ap()
+        ConfigMobLinks()
+
+    def setMode(self, node, mode):
+        node.wintfs[0].setMode(mode)
+
+>>>>>>> f09b69ce99fc80543cc33da2203a63b54133c50f
     def linkUp( self ):
         if ( self.selection is None or
              self.net is None):

@@ -198,6 +198,20 @@ function p4_deps {
         git reset --hard 1fa500a
         patch -p0 < $MININET_DIR/miniV2G/util/p4-patches/p4-guide-v3-without-mininet.patch
         sudo ./bin/install-p4dev-v3.sh |& tee log.txt
+    if [ ! -d "$P4_DIR" ] ; then
+        mkdir $P4_DIR
+    fi
+    pushd $BUILD_DIR/miniV2G/p4-dependencies
+    P4_GUIDE="p4-guide"
+    if [ ! -d "$P4_GUIDE" ] ; then
+        git clone https://github.com/jafingerhut/p4-guide
+    fi
+    pushd $BUILD_DIR/miniV2G/p4-dependencies/p4-guide
+
+    if [ "$DIST" = "Ubuntu" ] && [ `expr $RELEASE '>=' 18.04` = "1" ]; then
+        git reset --hard d0ed6a4
+        patch -p0 < $MININET_DIR/miniV2G/util/p4-patches/p4-guide-v4-without-mininet.patch
+        sudo ./bin/install-p4dev-v4.sh |& tee log.txt
     else
         git reset --hard ef0f4e1
         patch -p0 < $MININET_DIR/miniV2G/util/p4-patches/p4-guide-without-mininet.patch
@@ -207,31 +221,55 @@ function p4_deps {
 
 # Install miniV2G deps
 function wifi_deps {
-    echo "Installing MiniV2G dependencies"
-    $install wireless-tools rfkill ${PYPKG}-numpy pkg-config \
-             libnl-3-dev libnl-genl-3-dev libssl-dev make libevent-dev patch \
-             libdbus-1-dev ${PYPKG}-psutil 
-    if [ ${PYPKG} = "python" ];
-    then
-        echo "******* WARNING! It is NOT reccomended to use Python2! Go ahead at your own risk."
-        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-        sudo python2 get-pip.py
-        rm get-pip.py
+    echo "Installing Mininet dependencies"
+    if [ "$DIST" = "Fedora" -o "$DIST" = "RedHatEnterpriseServer" ]; then
+        $install gcc make socat psmisc xterm openssh-clients iperf \
+            iproute telnet python-setuptools libcgroup-tools \
+            ethtool help2man pyflakes pylint python-pep8 python-pexpect
+    elif [ "$DIST" = "SUSE LINUX"  ]; then
+        $install gcc make socat psmisc xterm openssh iperf \
+          iproute telnet ${PYPKG}-setuptools libcgroup-tools \
+          ethtool help2man ${PYPKG}-pyflakes python3-pylint \
+                            python-pep8 ${PYPKG}-pexpect ${PYPKG}-tk
     else
-        $install ${PYPKG}-pip
+        pf=pyflakes
+        # Starting around 20.04, installing pyflakes instead of pyflakes3
+        # causes Python 2 to be installed, which is exactly NOT what we want.
+        if [ `expr $RELEASE '>=' 20.04` = "1" ]; then
+                pf=pyflakes3
+        fi
+        $install gcc make socat psmisc xterm ssh iperf telnet \
+                 ethtool help2man $pf pylint pep8 \
+                 net-tools \
+                 ${PYPKG}-pexpect ${PYPKG}-tk
+        # Install pip
+        $install ${PYPKG}-pip || $install ${PYPKG}-pip-whl
+        if ! ${PYTHON} -m pip -V; then
+            if [ $PYTHON_VERSION == 2 ]; then
+                wget https://bootstrap.pypa.io/pip/2.6/get-pip.py
+            else
+                wget https://bootstrap.pypa.io/get-pip.py
+            fi
+            sudo ${PYTHON} get-pip.py
+            rm get-pip.py
+        fi
+        $install iproute2 || $install iproute
+        $install cgroup-tools || $install cgroup-bin
     fi
 
+    echo "Installing Mininet-WiFi dependencies"
+    $install wireless-tools rfkill ${PYPKG}-numpy pkg-config \
+             libnl-3-dev libnl-genl-3-dev libssl-dev make libevent-dev patch \
+             libdbus-1-dev ${PYPKG}-psutil
+
     if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" = "14.04" ]; then
-        sudo pip install --upgrade pip
         sudo pip install matplotlib==2.1.1 --ignore-installed six
     else
         if [ "$PYTHON_VERSION" == 3 ]; then
             $install python3-matplotlib
         else
-            sudo pip install --upgrade pip
             sudo pip install matplotlib==2.1.1 --ignore-installed six
         fi
-        $install net-tools
     fi
 
     pushd $MININET_DIR/miniV2G
@@ -428,8 +466,14 @@ function of13 {
     echo "Installing OpenFlow 1.3 soft switch implementation..."
     cd $BUILD_DIR/
     $install  git-core autoconf automake autotools-dev pkg-config \
-        make gcc g++ libtool libc6-dev cmake libpcap-dev libxerces-c3-dev  \
+        make gcc g++ libtool libc6-dev cmake libpcap-dev  \
         unzip libpcre3-dev flex bison libboost-dev
+
+    if [ "$DIST" = "Ubuntu" ] && version_le $RELEASE 16.04; then
+        $install libxerces-c2-dev
+    else
+        $install libxerces-c-dev
+    fi
 
     if [ ! -d "ofsoftswitch13" ]; then
         if [[ -n "$OF13_SWITCH_REV" ]]; then

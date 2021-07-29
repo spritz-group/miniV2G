@@ -114,6 +114,9 @@ class Node_wifi(Node):
     def setMasterMode(self, intf=None, **kwargs):
         self.getNameToWintf(intf).setMasterMode(**kwargs)
 
+    def setTC(self, intf=None, **kwargs):
+        self.getNameToWintf(intf).config_tc(**kwargs)
+
     def setOCBMode(self, **params):
         ITSLink(self, **params)
 
@@ -163,6 +166,9 @@ class Node_wifi(Node):
     def setAntennaHeight(self, height, intf=None):
         self.getNameToWintf(intf).setAntennaHeight(height)
         self.update_graph()
+        
+    def getAntennaHeight(self, intf=None):
+        return self.getNameToWintf(intf).getAntennaHeight()
 
     def setChannel(self, channel, intf=None):
         self.getNameToWintf(intf).setChannel(channel)
@@ -181,6 +187,9 @@ class Node_wifi(Node):
                 txpower = 14 if isinstance(self, AP) else 20
             return txpower
 
+    def set_text(self, text):
+        self.plttxt.set_text(text)
+
     def set_text_pos(self, x, y):
         self.plttxt.xyann = (x, y)
 
@@ -194,10 +203,9 @@ class Node_wifi(Node):
         "Set Position for wmediumd"
         if self.lastpos != pos:
             self.lastpos = pos
-            for wmIface in self.wmIfaces:
-                inc = '%s' % float('0.' + str(self.wmIfaces.index(wmIface)))
+            for id, wmIface in enumerate(self.wmIfaces):
                 w_server.update_pos(w_pos(wmIface,
-                    [(float(pos[0])+float(inc)), float(pos[1]), float(pos[2])]))
+                    [(float(pos[0])+id), float(pos[1]), float(pos[2])]))
 
     def setPosition(self, pos):
         "Set Position"
@@ -338,7 +346,7 @@ class Node_wifi(Node):
         connections = []
         for intf in self.intfList():
             link = intf.link
-            if link and link.intf2 is not None and link.intf2 != 'wifi':
+            if link and link.intf2 is not None and 'wifi' not in str(link.intf2):
                 node1, node2 = link.intf1.node, link.intf2.node
                 if node1 == self and node2 == node:
                     connections += [ (intf, link.intf2) ]

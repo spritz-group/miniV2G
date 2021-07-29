@@ -77,13 +77,13 @@ class PropagationModel(object):
         """Two Ray Ground Propagation Loss Model (does not give a good result for
         a short distance)"""
         gr = int(intf.antennaGain)
-        hr = int(intf.antennaHeight)
+        hr = float(intf.antennaHeight)
         pt = int(ap_intf.txpower)
         gt = int(ap_intf.antennaGain)
-        ht = int(ap_intf.antennaHeight)
+        ht = float(ap_intf.antennaHeight)
         gains = pt + gt + gr
         c = 299792458.0  # speed of light in vacuum
-        f = intf.bandChannel * 1000000  # frequency in Hz
+        f = intf.band * 1000000  # frequency in Hz
 
         if dist == 0: dist = 0.1
         denominator = (c / f) / 1000
@@ -168,9 +168,9 @@ class PropagationModel(object):
     def young(self, intf, ap_intf, dist):
         "Young Propagation Loss Model"
         gr = intf.antennaGain
-        hr = intf.antennaHeigth
+        hr = intf.antennaHeight
         gt = ap_intf.antennaGain
-        ht = ap_intf.antennaHeigth
+        ht = ap_intf.antennaHeight
         cf = 0.01075  # clutter factor
 
         if dist == 0: dist = 0.1
@@ -229,16 +229,16 @@ class SetSignalRange(object):
         """Two Ray Ground Propagation Loss Model (does not give a good result for
         a short distance)"""
         gt = int(intf.antennaGain)
-        ht = int(intf.antennaHeight)
+        ht = float(intf.antennaHeight)
         pt = int(intf.txpower)
         c = 299792458.0  # speed of light in vacuum
-        f = intf.bandChannel * 1000000  # frequency in Hz
+        f = intf.band * 1000000  # frequency in Hz
         gains = pt + gt
 
         denominator = (c / f) / 1000
         dCross = (4 * math.pi * ht * ht) / denominator
         numerator = (pt * gt * gt * ht ** 2 * ht ** 2)
-        self.range = (numerator / ((gains - ppm.noise_th))/ppm.sL) * dCross
+        self.range = (numerator / (gains - ppm.noise_th)/ppm.sL) * dCross
         return self.range
 
     def logDistance(self, intf):
@@ -349,10 +349,10 @@ class GetPowerGivenRange(object):
         a short distance)"""
         dist = intf.range
         gt = intf.antennaGain
-        ht = intf.antennaHeigth
+        ht = intf.antennaHeight
         pt = intf.txpower
         c = 299792458.0  # speed of light in vacuum
-        f = intf.bandChannel * 1000000  # frequency in Hz
+        f = intf.band * 1000000  # frequency in Hz
         gains = pt + gt
 
         dCross = ((4 * math.pi * ht) / (c / f)) * ppm.sL
