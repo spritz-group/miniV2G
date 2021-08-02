@@ -194,13 +194,10 @@ function p4_deps {
     git clone https://github.com/jafingerhut/p4-guide
     pushd $BUILD_DIR/miniV2G/p4-dependencies/p4-guide
 
-    if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" = "20.04" ]; then
-        git reset --hard 1fa500a
-        patch -p0 < $MININET_DIR/miniV2G/util/p4-patches/p4-guide-v3-without-mininet.patch
-        sudo ./bin/install-p4dev-v3.sh |& tee log.txt
     if [ ! -d "$P4_DIR" ] ; then
         mkdir $P4_DIR
     fi
+
     pushd $BUILD_DIR/miniV2G/p4-dependencies
     P4_GUIDE="p4-guide"
     if [ ! -d "$P4_GUIDE" ] ; then
