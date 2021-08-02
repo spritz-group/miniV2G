@@ -270,6 +270,8 @@ function wifi_deps {
     fi
 
     pushd $MININET_DIR/miniV2G
+    git rm --cached iw || true
+    git rm --cached mininet || true 
     git submodule update --init --recursive
     pushd $MININET_DIR/miniV2G/hostap
     if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" =  "14.04" ]; then
