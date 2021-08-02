@@ -65,7 +65,7 @@ if [ "$DIST" = "Arch Linux" ]; then
     update='pacman -Syu'
     # Prereqs for this script
     if ! which lsb_release &> /dev/null; then
-		$install lsb-release
+        $install lsb-release
     fi
 fi
 
@@ -270,8 +270,8 @@ function wifi_deps {
     fi
 
     pushd $MININET_DIR/miniV2G
-    git rm --cached iw || true
-    git rm --cached mininet || true 
+    git rm --cached iw || true  # useful during updates from older versions
+    git rm --cached mininet || true  # useful during updates from older versions
     git submodule update --init --recursive
     pushd $MININET_DIR/miniV2G/hostap
     if [ "$DIST" = "Ubuntu" ] && [ "$RELEASE" =  "14.04" ]; then
@@ -446,6 +446,10 @@ function of {
         $install git pkgconfig glibc-devel
     else
         $install git-core autotools-dev pkg-config libc6-dev
+    fi
+    if [ -d openflow ]; then
+          echo "Removing openflow..."
+          rm -r openflow
     fi
     git clone --depth=1 https://github.com/mininet/openflow
     cd $BUILD_DIR/openflow
@@ -736,17 +740,17 @@ function v2g {
     echo "Installing v2g..."
 
     if ! which curl; then
-	echo "Installing curl..."
-	$install curl
+    echo "Installing curl..."
+    $install curl
     fi
 
     # Download latest compiled release available on official repo
     LINK1=$(curl -s https://api.github.com/repos/V2GClarity/RISE-V2G/releases\
-	| grep "browser_download_url.*.jar" \
-	| grep -Po '(?<="browser_download_url": ")[^"]*' | sed -sn 1p); \
+    | grep "browser_download_url.*.jar" \
+    | grep -Po '(?<="browser_download_url": ")[^"]*' | sed -sn 1p); \
     LINK2=$(curl -s https://api.github.com/repos/V2GClarity/RISE-V2G/releases\
-	| grep "browser_download_url.*.jar" \
-	| grep -Po '(?<="browser_download_url": ")[^"]*' | sed -sn 2p); \
+    | grep "browser_download_url.*.jar" \
+    | grep -Po '(?<="browser_download_url": ")[^"]*' | sed -sn 2p); \
     #echo "Downloading $LINK1 and $LINK2"; (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK1); (cd $MININET_DIR/miniV2G/util/RiseV2G && sudo curl -L -O $LINK2);
 
     # Copy latest jar files to local directory
@@ -779,8 +783,8 @@ function v2g {
         echo "Installing xhost..."
         if [ "$DIST" = "Arch" ]; then
             $install xorg-xhost
-	elif [ "$DIST" = "Ubuntu" ] || [ "$DIST" = "Debian" ]; then
-	    $install x11-xserver-utils
+    elif [ "$DIST" = "Ubuntu" ] || [ "$DIST" = "Debian" ]; then
+        $install x11-xserver-utils
         else
             echo "Please, Install xhost. It is required to run term.py."
         fi
