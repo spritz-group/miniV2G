@@ -143,6 +143,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         self.max_z = 0
         self.min_wt = 1
         self.max_wt = 5
+        self.n_groups = 1
         self.wlinks = []
         self.pointlist = []
 
@@ -166,7 +167,10 @@ class Mininet_wifi(Mininet, Mininet_IoT):
     def start_socket(self, ip='127.0.0.1', port=12345):
         CleanupWifi.socket_port = port
 
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if ':' in ip:
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((ip, port))
         s.listen(1)
@@ -209,7 +213,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                                     method_to_call(val, intf=intf)
                                 else:
                                     val = pos if pos else attr[1].split(')')[0]
-                                    method_to_call(val)
+                                    method_to_call(val.replace('"', '').replace("'", ""))
                                     data = 'command accepted!'
                             else:
                                 data = 'unrecognized method!'
@@ -394,10 +398,10 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                                 ipBaseNum=self.ipBaseNum,
                                 prefixLen=self.prefixLen) +
                           '/%s' % self.prefixLen,
-                    'ip6': ipAdd6(self.nextIP,
-                                  ipBaseNum=self.ipBaseNum,
-                                  prefixLen=self.prefixLen) +
-                           '/%s' % self.prefixLen,
+                    'ip6': ipAdd6(self.nextIP6,
+                                  ipBaseNum=self.ip6BaseNum,
+                                  prefixLen=self.prefixLen6) +
+                           '/%s' % self.prefixLen6,
                     }
 
         if self.autoSetMacs:
@@ -408,6 +412,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         defaults.update(params)
 
         self.nextIP += 1
+        self.nextIP6 += 1
         if not cls:
             cls = self.car
         car = cls(name, **defaults)
@@ -542,28 +547,35 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         return True
 
     def get_intf(self, node1, node2, port1=None, port2=None):
-        ap = node1 if node1 in self.aps else node2
-        sta = node1 if node2 in self.aps else node2
-        wlan, ap_wlan = 0, 0
+        wlan1, wlan2 = 0, 0
 
-        if port1 is not None and port2 is not None:
-            ap_wlan = port1 if node1 in self.aps else port2
-            wlan = port1 if node2 in self.aps else port2
+        if node1 in self.stations and node2 in self.stations:
+            n1 = node1
+            n2 = node2
+        else:
+            n1 = node1 if node2 in self.aps else node2
+            n2 = node1 if node1 in self.aps else node2
 
-        intf = sta.wintfs[wlan]
-        ap_intf = ap.wintfs[ap_wlan]
+            if port1 is not None and port2 is not None:
+                wlan1 = port1 if node2 in self.aps else port2
+                wlan2 = port1 if node1 in self.aps else port2
 
-        return intf, ap_intf
+        intf1 = n1.wintfs[wlan1]
+        intf2 = n2.wintfs[wlan2]
+
+        return intf1, intf2
 
     def infra_wmediumd_link(self, node1, node2, port1=None, port2=None,
                             **params):
-        intf, ap_intf = self.get_intf(node1, node2, port1, port2)
-        intf.associate(ap_intf)
+        intf1, intf2 = self.get_intf(node1, node2, port1, port2)
+
+        if 'error_prob' not in params:
+            intf1.associate(intf2)
 
         if self.wmediumd_mode == error_prob:
-            self.wlinks.append([intf, ap_intf, params['error_prob']])
+            self.wlinks.append([intf1, intf2, params['error_prob']])
         elif self.wmediumd_mode != interference:
-            self.wlinks.append([intf, ap_intf])
+            self.wlinks.append([intf1, intf2])
 
     def infra_tc(self, node1, node2, port1=None, port2=None,
                  cls=None, **params):
@@ -599,6 +611,8 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         if cls in modes:
             link = cls(node=node1, **params)
             self.links.append(link)
+            if node2 and self.wmediumd_mode == error_prob:
+                self.infra_wmediumd_link(node1, node2, **params)
             return link
         elif cls == physicalMesh:
             cls(node=node1, **params)
@@ -722,6 +736,12 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                         mob.stations.append(node)
 
         if self.config4addr or self.configWiFiDirect or self.wmediumd_mode == error_prob:
+            # sync with the current 2nd interface type
+            for id, link in enumerate(self.wlinks):
+                for node in self.stations:
+                    for intf in node.wintfs.values():
+                        if intf.name == link[1].name:
+                            self.wlinks[id][1] = intf
             self.init_wmediumd()
 
         if self.inNamespace:
@@ -1209,7 +1229,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         args = ['stations', 'cars', 'aps', 'draw', 'seed',
                 'roads', 'mob_start_time', 'mob_stop_time',
                 'links', 'mob_model', 'mob_rep', 'reverse',
-                'ac_method', 'pointlist']
+                'ac_method', 'pointlist', 'n_groups']
         args += float_args
         for arg in args:
             if arg in float_args:
@@ -1354,7 +1374,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 params['latency'] = link.intf1.params['latency']
             if 'loss' in link.intf1.params:
                 params['loss'] = link.intf1.params['loss']
-            if params and 'delay' not in link.intf1.params:
+            if params and 'delay' not in link.intf1.params and hasattr(link.intf1, 'configWLink'):
                 link.intf1.configWLink.set_tc(link.intf1.name, **params)
 
     def auto_association(self):
