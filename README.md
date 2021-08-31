@@ -72,3 +72,15 @@ Federico Turrin (turrin@math.unipd.it)
 
 We are members of [SPRITZ Security and Privacy Research Group](https://spritz.math.unipd.it/) at University of Padua, Italy.
 
+### Cite
+
+Are you using MiniV2G in your research work? Please, cite us:
+```bibtex   
+@inproceedings{attanasio2021miniv2g,
+  title={MiniV2G: An Electric Vehicle Charging Emulator},
+  author={Attanasio, Luca and Conti, Mauro and Donadel, Denis and Turrin, Federico},
+  booktitle={Proceedings of the 7th ACM on Cyber-Physical System Security Workshop},
+  pages={65--73},
+  year={2021}
+}
+```
